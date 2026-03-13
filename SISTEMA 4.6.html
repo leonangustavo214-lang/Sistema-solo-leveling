@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadow System - Interface S-Rank</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00d4ff;
+            --primary-glow: rgba(0, 212, 255, 0.4);
+            --accent: #ffd700;
+            --danger: #ff2a6d;
+            --xp-color: #00ffcc;
+            --bg-dark: #02050a;
+            --panel-bg: rgba(5, 15, 25, 0.85);
+            --border-style: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        * { box-sizing: border-box; font-family: 'Rajdhani', sans-serif; }
+        
+        body { 
+            margin: 0; 
+            background: var(--bg-dark); 
+            background-image: 
+                radial-gradient(circle at 50% 50%, #0a192f 0%, #02050a 100%),
+                url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            color: #e0e0e0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px; 
+            overflow-x: hidden; 
+        }
+
+        /* Container Principal */
+        .system-container { 
+            width: 100%; 
+            max-width: 1200px; 
+            display: grid; 
+            grid-template-columns: 320px 1fr 300px; 
+            gap: 25px; 
+            margin-top: 20px;
+        }
+
+        @media (max-width: 1100px) { 
+            .system-container { grid-template-columns: 1fr; } 
+        }
+
+        /* Painéis Estilo Solo Leveling */
+        .panel { 
+            background: var(--panel-bg); 
+            border: var(--border-style); 
+            padding: 20px; 
+            position: relative; 
+            backdrop-filter: blur(10px);
+            box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.05);
+            clip-path: polygon(0 10px, 10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+        }
+
+        .panel::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(45deg, transparent 48%, rgba(0, 212, 255, 0.1) 50%, transparent 52%);
+            pointer-events: none;
+        }
+
+        /* Avatar e Level */
+        .avatar-frame { 
+            width: 140px; height: 140px; 
+            margin: 0 auto 15px; 
+            border: 2px solid var(--primary); 
+            background: #000; 
+            box-shadow: 0 0 20px var(--primary-glow); 
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .avatar-frame img { width: 100%; height: 100%; object-fit: cover; }
+
+        .lvl-display { 
+            font-size: 4rem; 
+            font-weight: 900; 
+            text-align: center; 
+            color: #fff;
+            text-shadow: 0 0 15px var(--primary-glow); 
+            margin: -10px 0 10px 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .xp-bar-container { 
+            width: 100%; height: 6px; 
+            background: rgba(0,0,0,0.5); 
+            margin: 15px 0; 
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+        .xp-bar-fill { 
+            height: 100%; 
+            background: linear-gradient(90deg, var(--primary), var(--xp-color)); 
+            width: 0%; 
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        /* Árvore de Missão */
+        .mission-tree-panel { 
+            max-height: 80vh;
+            overflow-y: auto;
+            border-top: 3px solid var(--primary);
+        }
+        
+        .mission-matrix { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 15px; 
+            padding: 10px;
+        }
+
+        .mission-node { 
+            aspect-ratio: 1/1;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.4);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; 
+            cursor: pointer; transition: 0.3s; 
+            font-size: 0.7rem; font-weight: bold;
+            text-align: center;
+        }
+        
+        .mission-node.unlocked { 
+            border-color: var(--xp-color); 
+            background: rgba(0, 255, 204, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+            color: var(--xp-color);
+        }
+        
+        .mission-node.available { 
+            border-color: var(--accent); 
+            animation: pulse 2s infinite;
+            color: var(--accent);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0px rgba(255, 215, 0, 0.4); }
+            50% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.6); }
+            100% { box-shadow: 0 0 0px rgba(255, 215, 0, 0.4); }
+        }
+
+        /* Atributos */
+        .attr-item { 
+            display: flex; align-items: center;
+            background: rgba(0, 212, 255, 0.03); 
+            padding: 10px; 
+            border-left: 3px solid var(--primary);
+            margin-bottom: 8px; 
+            transition: 0.2s;
+        }
+        .attr-item:hover { background: rgba(0, 212, 255, 0.08); }
+        
+        .attr-name-input { 
+            background: transparent; border: none; 
+            color: var(--primary); font-size: 0.8rem; 
+            text-transform: uppercase; letter-spacing: 1px;
+            outline: none; width: 65%; font-weight: 600; 
+        }
+        .attr-val-input { 
+            background: transparent; border: none; 
+            color: #fff; text-align: right; width: 35%; 
+            font-size: 1.1rem; outline: none; font-weight: bold;
+        }
+
+        /* Botões */
+        .btn { 
+            padding: 10px; 
+            border: 1px solid var(--primary); 
+            background: rgba(0, 212, 255, 0.05); 
+            cursor: pointer; color: var(--primary); 
+            font-weight: bold; text-transform: uppercase; 
+            font-size: 0.75rem; transition: 0.3s;
+            letter-spacing: 1px;
+        }
+        .btn:hover { background: var(--primary); color: #000; box-shadow: 0 0 15px var(--primary-glow); }
+        .btn-lvl { border-color: var(--accent); color: var(--accent); margin-top: 15px; }
+        .btn-lvl:hover { background: var(--accent); color: #000; }
+
+        /* Overlays & Popups */
+        #popup { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            width: 90%; max-width: 400px; 
+            background: #050a14; border: 2px solid var(--primary); 
+            padding: 30px; z-index: 20000; display: none; 
+            box-shadow: 0 0 50px #000;
+        }
+        
+        #creation-overlay { 
+            position: fixed; inset: 0; background: #02050a; 
+            z-index: 10000; display: flex; justify-content: center; align-items: center; 
+        }
+        .creation-card { 
+            background: var(--panel-bg); border: 1px solid var(--primary); 
+            padding: 40px; width: 400px; text-align: center;
+            box-shadow: 0 0 30px var(--primary-glow);
+        }
+
+        input[type="text"], select { 
+            width: 100%; background: rgba(0,0,0,0.5); 
+            border: 1px solid rgba(0,212,255,0.3); color: white; 
+            padding: 12px; margin-bottom: 15px; outline: none;
+        }
+
+        h2, h3 { letter-spacing: 2px; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+    <div id="creation-overlay" style="display: none;">
+        <div class="creation-card">
+            <h2 style="color:var(--primary); margin-bottom:30px;">REGISTRO DE CAÇADOR</h2>
+            <input type="text" id="init-name" placeholder="NOME DO JOGADOR">
+            <select id="init-class">
+                <option value="Guerreiro">GUERREIRO</option>
+                <option value="Samurai">SAMURAI</option>
+                <option value="Ladino">LADINO</option>
+                <option value="Mago">MAGO</option>
+                <option value="Necromante">NECROMANTE</option>
+                <option value="Monge">MONGE</option>
+                <option value="Bárbaro">BÁRBARO</option>
+            </select>
+            <p style="font-size: 0.7rem; color: #666;">UPLOAD DE AVATAR (IMG):</p>
+            <input type="file" id="init-img" accept="image/*">
+            <button class="btn" onclick="finalizeCreation()" style="width:100%; height: 50px; margin-top:10px;">VINCULAR AO SISTEMA</button>
+        </div>
+    </div>
+
+    <div id="popup">
+        <h3 id="pop-title" style="color:var(--accent); margin-top:0;"></h3>
+        <p id="pop-desc" style="color:#bbb; font-size:0.9rem; font-family:'Inter'"></p>
+        <p id="pop-req" style="color:var(--primary); font-size:0.8rem; font-weight:bold;"></p>
+        <div id="pop-reward" style="background: rgba(0,255,204,0.1); padding: 10px; margin: 15px 0; border: 1px dashed var(--xp-color); color:var(--xp-color); font-size:0.8rem;">
+            RECOMPENSA: +5% XP NO SISTEMA
+        </div>
+        <div id="pop-actions"></div>
+        <button class="btn" onclick="closePopup()" style="width:100%; margin-top:10px; border-color:#444; color:#666;">FECHAR</button>
+    </div>
+
+    <div class="system-container">
+        <div class="panel">
+            <div class="avatar-frame"><img id="p-img" src=""></div>
+            <h2 id="disp-name" style="text-align:center; margin:10px 0 5px 0; color:#fff;">---</h2>
+            <p id="disp-class" style="text-align:center; color:var(--primary); font-size:0.8rem; margin-bottom:20px; letter-spacing:3px;">---</p>
+            
+            <div style="color:var(--primary); font-size:0.7rem; font-weight:bold; text-align:center;">LEVEL</div>
+            <div class="lvl-display" id="lvl-txt">01</div>
+            
+            <div class="xp-bar-container"><div class="xp-bar-fill" id="xp-fill"></div></div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <button class="btn" onclick="changeXP(1)">+1% XP</button>
+                <button class="btn" onclick="changeXP(-1)">-1% XP</button>
+            </div>
+            <button class="btn btn-lvl" onclick="addLevel()" style="width:100%">FORÇAR LEVEL UP</button>
+            
+            <button class="btn" onclick="resetCharacter()" style="width:100%; margin-top:40px; color:var(--danger); border:none; opacity:0.3; font-size:0.6rem;">REINICIALIZAR SISTEMA</button>
+        </div>
+
+        <div class="panel mission-tree-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="color:var(--primary); margin:0; font-size:1rem;">PROTOCOLO DE MISSÕES</h3>
+                <span id="pts-count" style="color:var(--accent); font-weight:bold; font-size:0.8rem;">PTS: 0</span>
+            </div>
+            <div class="mission-matrix" id="mission-matrix"></div>
+        </div>
+
+        <div class="panel">
+            <h3 style="color:var(--accent); font-size:0.9rem; margin-top:0; border-bottom:1px solid rgba(255,215,0,0.2); padding-bottom:10px;">STATUS DETALHADO</h3>
+            <div id="attr-container" style="margin-top:15px;"></div>
+            <p style="font-size:0.6rem; color:#444; margin-top:20px; text-align:center;">OS VALORES SÃO SALVOS AUTOMATICAMENTE</p>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'shadow_master_v5_final_reward';
+        
+        let state = { 
+            name: "", job: "Guerreiro", lvl: 1, xp: 0, img: "", 
+            unlockedMissions: [], 
+            attrs: [
+                {label: "FORÇA", val: 10}, {label: "AGILIDADE", val: 10}, 
+                {label: "VITALIDADE", val: 10}, {label: "INTELIGÊNCIA", val: 10}, 
+                {label: "PERCEPÇÃO", val: 10}, {label: "SORTE", val: 10},
+                {label: "DESTREZA", val: 10}, {label: "VONTADE", val: 10},
+                {label: "MANA", val: 10}, {label: "DEFESA", val: 10}
+            ] 
+        };
+
+        const getMissionData = (job, tier, row) => {
+            const types = ["ALPHA", "SIGMA", "OMEGA"];
+            return {
+                name: `PROTOCOLO ${types[row]} - T${tier + 1}`,
+                desc: `Missão de rank designado para o arquétipo ${job}. Execute treinamento de alta intensidade focado em ${state.attrs[row]?.label || 'Combate'}.`
+            };
+        };
+
+        function init() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                state = JSON.parse(saved);
+                document.getElementById('creation-overlay').style.display = 'none';
+                refreshUI();
+            } else {
+                document.getElementById('creation-overlay').style.display = 'flex';
+            }
+        }
+
+        function finalizeCreation() {
+            const n = document.getElementById('init-name').value;
+            const j = document.getElementById('init-class').value;
+            const f = document.getElementById('init-img').files[0];
+            if(!n || !f) return alert("Identificação biométrica necessária (Nome e Foto)!");
+            state.name = n.toUpperCase(); state.job = j;
+            const r = new FileReader();
+            r.onloadend = () => { state.img = r.result; save(); location.reload(); };
+            r.readAsDataURL(f);
+        }
+
+        function renderTree() {
+            const matrix = document.getElementById('mission-matrix');
+            matrix.innerHTML = '';
+            const totalPoints = Math.floor(state.lvl / 5); 
+            const spentPoints = state.unlockedMissions.length;
+            document.getElementById('pts-count').innerText = `PONTOS: ${totalPoints - spentPoints}`;
+
+            for(let t=0; t<15; t++) { 
+                const isTierUnlocked = state.unlockedMissions.some(id => Math.floor(id/3) === t);
+                const isPrevTierUnlocked = t === 0 || state.unlockedMissions.some(id => Math.floor(id/3) === t - 1);
+                const reqLevel = (t + 1) * 5;
+
+                for(let r=0; r<3; r++) { 
+                    const mId = (t * 3) + r;
+                    const isUnlocked = state.unlockedMissions.includes(mId);
+                    const canUnlock = !isUnlocked && !isTierUnlocked && isPrevTierUnlocked && state.lvl >= reqLevel && (spentPoints < totalPoints);
+
+                    const node = document.createElement('div');
+                    node.className = `mission-node ${isUnlocked ? 'unlocked' : (canUnlock ? 'available' : '')}`;
+                    if (isTierUnlocked && !isUnlocked) node.style.opacity = "0.1";
+                    
+                    node.innerHTML = `<span style="font-size:0.5rem">LVL ${reqLevel}</span><div style="font-size:0.9rem">R${r+1}</div>`;
+                    node.onclick = () => showMission(getMissionData(state.job, t, r), mId, reqLevel, isUnlocked, canUnlock, totalPoints - spentPoints);
+                    matrix.appendChild(node);
+                }
+            }
+        }
+
+        function showMission(data, id, req, unlocked, available, pts) {
+            const pop = document.getElementById('popup');
+            pop.style.display = 'block';
+            document.getElementById('pop-title').innerText = data.name;
+            document.getElementById('pop-desc').innerText = data.desc;
+            document.getElementById('pop-req').innerText = `REQUISITO: NÍVEL ${req}`;
+            
+            const area = document.getElementById('pop-actions');
+            area.innerHTML = '';
+            if(available) {
+                const b = document.createElement('button');
+                b.className = 'btn'; b.style.width = '100%'; b.style.color = 'var(--xp-color)';
+                b.style.marginTop = '10px';
+                b.innerText = 'CONCLUIR MISSÃO';
+                b.onclick = () => { 
+                    state.unlockedMissions.push(id); 
+                    changeXP(5);
+                    closePopup(); 
+                };
+                area.appendChild(b);
+            } else if (unlocked) {
+                area.innerHTML = '<p style="color:var(--xp-color)">MISSAO JÁ CONCLUÍDA</p>';
+            }
+        }
+
+        function changeXP(amt) {
+            state.xp += amt;
+            while(state.xp >= 100) { state.lvl++; state.xp -= 100; }
+            if(state.xp < 0) state.xp = 0;
+            save(); refreshUI();
+        }
+
+        function updateAttr(i, f, v) { state.attrs[i][f] = v; save(); }
+        function closePopup() { document.getElementById('popup').style.display = 'none'; }
+        function addLevel() { state.lvl++; save(); refreshUI(); }
+
+        function refreshUI() {
+            document.getElementById('disp-name').innerText = state.name;
+            document.getElementById('disp-class').innerText = state.job.toUpperCase();
+            document.getElementById('p-img').src = state.img;
+            document.getElementById('lvl-txt').innerText = state.lvl.toString().padStart(2, '0');
+            document.getElementById('xp-fill').style.width = `${state.xp}%`;
+            
+            const attrCont = document.getElementById('attr-container');
+            attrCont.innerHTML = state.attrs.map((attr, i) => `
+                <div class="attr-item">
+                    <input type="text" class="attr-name-input" value="${attr.label}" oninput="updateAttr(${i}, 'label', this.value.toUpperCase())">
+                    <input type="number" class="attr-val-input" value="${attr.val}" oninput="updateAttr(${i}, 'val', this.value)">
+                </div>
+            `).join('');
+            renderTree();
+        }
+
+        function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+        function resetCharacter() { if(confirm("Deseja apagar todos os registros do sistema?")) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
+        window.onload = init;
+    </script>
+</body>
+</html>
